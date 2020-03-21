@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <style>
+          #txt{background-color:black;
+               text-align:center;
+               color:white;
+               width:25%;
+               height:100px;
+               font-size:60px;
+               border:5px solid gray;
+               position: absolute;
+               top:8px;}
+
+            #c {background-color:black;
+               text-align:center;
+               color:white;
+               width:25%;
+               height:100px;
+               font-size:30px;
+               border:5px solid gray;
+               position: absolute;
+               top:450px;
+               left:8px;}
+       
+
+            #ampm {background-color: black;
+              text-align:center;
+               color:white;
+               width:28%;
+               height:100px;
+               font-size:60px;
+               border:5px solid gray;
+               position :absolute;
+               left :410px;
+               top :8px;
+               }
+            #stopwatch{background-color: black;
+              text-align:center;
+               color:white;
+               width:25%;
+               height:200px;
+               font-size:30px;
+               border:5px solid gray;
+               position :absolute;
+               top :180px;}
+            #start,#clear,#stop {
+                display:inline;
+                background-color: gray;
+                padding-left: 10px;
+                padding-right: 10px;
+                border:2px solid black;
+                font-size: 25px;
+
+            }
+            #canvas{ margin-left : 400px;
+                    margin-top : 150px;
+                     }
+
+            #namaz {background-color:gray;
+               text-align:center;
+               width:30%;
+               height:600px;
+               font-size:60px;
+               position: absolute;
+               top:8px;
+               left:900px;
+               display:block;
+               padding-top: 0px;
+               }
+               #head {margin-top: -60px;
+              margin-bottom: -60px;}
+        
+            #fajar ,#zuhr, #asar, #maghrib ,#isha{background-color:black;
+               text-align:center;
+               color:white;
+               width:70%;
+               height:85px;
+               font-size:60px;
+               border:5px solid gray;
+               margin-left:50px;
+               border:4px solid black;
+               margin-top:5px;
+
+            }
+        </style>
+        
+  </head>
+<body onload="startTime();namazTime();stopwatch()">
+    <div id="withoutFault">
+<canvas id="canvas" width="400" height="400"
+style="background-color:rgb(0,0,0)">
+</canvas>
+
+<div id="txt"></div>
+
+<div id="ampm"></div>
+<div id="stopwatch">
+    <h1><time>00:00:00</time></h1>
+<button id="start">start</button>
+<button id="stop">stop</button>
+<button id="clear">clear</button>
+</div>
+<div id="namaz">
+        <div id="head"><h5>Namaz Time</h5></div>
+   
+  <div id="fajar"></div>
+  <div id="zuhr"></div>
+  <div id="asar"></div>
+  <div id="maghrib"></div>
+  <div id="isha"></div>
+</div>
+<button id="c" onclick="c()">Insert Faults</button>
+</div>
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var radius = canvas.height / 2;
+ctx.translate(radius, radius);
+radius = radius * 0.90
+setInterval(drawClock, 1000);
+
+function drawClock() {
+  drawFace(ctx, radius);
+  drawNumbers(ctx, radius);
+  drawTime(ctx, radius);
+}
+
+function drawFace(ctx, radius) {
+  var grad;
+  ctx.beginPath(); //Begins a path, or resets the current path
+  ctx.arc(0, 0, radius, 0, 2*Math.PI); //Creates an arc/curve (used to create circles, or parts of circles)
+  ctx.fillStyle = 'white'; //Sets or returns the color, gradient, or pattern used to fill the drawing
+  ctx.fill(); //Fills the current drawing (path)
+  grad = ctx.createRadialGradient(0,0,radius*0.95, 0,0,radius*1.05); //Creates a radial/circular gradient (to use on canvas content)
+  grad.addColorStop(0, '#333'); //Specifies the colors and stop positions in a gradient object (foe change needle color)
+  grad.addColorStop(0.5, 'white'); //color circle
+  grad.addColorStop(1, '#333'); //
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = radius*0.1;
+  ctx.stroke(); //Sets or returns the color, gradient, or pattern used for strokes
+  ctx.beginPath();
+  ctx.arc(0, 0, radius*0.1, 0, 2*Math.PI);
+  ctx.fillStyle = '#333';
+  ctx.fill();
+}
+
+function drawNumbers(ctx, radius) {
+  var ang;
+  var num;
+  ctx.font = radius*0.15 + "px arial"; //Sets or returns the current font properties for text content
+  ctx.textBaseline="middle"; //Sets or returns the current text baseline used when drawing text
+  ctx.textAlign="center"; // Sets or returns the current alignment for text content
+  for(num = 1; num < 13; num++){
+    ang = num * Math.PI / 6; 
+    ctx.rotate(ang); //Rotates the current drawing
+    ctx.translate(0, -radius*0.85);
+    ctx.rotate(-ang); 
+    ctx.fillText(num.toString(), 0, 0); //Draws "filled" text on the canvas
+    ctx.rotate(ang); 
+    ctx.translate(0, radius*0.85); //Remaps the (0,0) position on the canvas
+    ctx.rotate(-ang);
+  }
+}
+
+function drawTime(ctx, radius){
+    var now = new Date();
+    var hour = now.getHours();
+    var minute = now.getMinutes();
+    var second = now.getSeconds();
+    //hour
+    hour=hour%12; //22%12
+    hour=(hour*Math.PI/6)+ //5.23 10
+    (minute*Math.PI/(6*60))+//50 26.18
+    (second*Math.PI/(360*60)); //
+    drawHand(ctx, hour, radius*0.5, radius*0.07);
+    //minute
+    minute=(minute*Math.PI/30)+(second*Math.PI/(30*60));
+    drawHand(ctx, minute, radius*0.8, radius*0.07);
+    // second
+    second=(second*Math.PI/30);
+    drawHand(ctx, second, radius*0.9, radius*0.02);
+}
+
+function drawHand(ctx, pos, length, width) {
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.lineCap = "round"; //Sets or returns the style of the end caps for a line
+    ctx.moveTo(0,0);  //Moves the path to the specified point in the canvas, without creating a line
+    ctx.rotate(pos);
+    ctx.lineTo(0, -length); //Adds a new point and creates a line to that point from the last specified point in the canvas
+    ctx.stroke(); 
+    ctx.rotate(-pos);
+}
+
+function c()
+{
+  document.getElementById("withoutFault").style.display= "none";
+            window.location.replace('Fault.html');
+            
+}
+</script>
+
+<script>
+  function startTime() {
+  var today = new Date();
+  var h = today.getHours();
+  var m = today.getMinutes();
+  var s = today.getSeconds();
+  m = checkTime(m);
+  s = checkTime(s);
+  var ampm;
+  if (h<12)
+      {
+        ampm="AM";
+        document.getElementById("ampm").innerHTML="AM";
+      }
+      else
+      {
+        ampm="PM";
+        document.getElementById("ampm").innerHTML="PM";
+      }  
+      h=h%12;
+  
+  document.getElementById('txt').innerHTML =
+  h + ":" + m + ":" + s ;
+
+  
+
+  var t = setTimeout(startTime, 1);
+}
+function checkTime(i) {
+  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+  return i;
+}
+
+  function stopwatch(){
+    var h1 = document.getElementsByTagName('h1')[0],
+    start = document.getElementById('start'),
+    stop = document.getElementById('stop'),
+    clear = document.getElementById('clear'),
+    seconds = 0, minutes = 0, hours = 0,
+    t;
+
+function add() {
+    seconds++;
+    if (seconds >= 60) {
+        seconds = 0;
+        minutes++;
+        if (minutes >= 60) {
+            minutes = 0;
+            hours++;
+        }
+    }
+    
+    h1.textContent = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+
+    timer();
+}
+function timer() {
+    t = setTimeout(add, 1000);
+}
+//timer();
+
+
+/* Start button */
+start.onclick = timer;
+
+/* Stop button */
+stop.onclick = function() {
+    clearTimeout(t);
+}
+
+/* Clear button */
+clear.onclick = function() {
+    h1.textContent = "00:00:00";
+    seconds = 0; minutes = 0; hours = 0;
+}
+  
+  }    
+  </script>
+  <script>
+    function namazTime() {
+      var today = new Date();
+      //var h = today.getHours();
+      var m = today.getMinutes();
+      var s = today.getSeconds();
+      var h=14;
+      
+      document.getElementById('fajar').innerHTML = " Fajar ";
+      document.getElementById('zuhr').innerHTML = " Zuhr ";
+      document.getElementById('asar').innerHTML = " Asar ";
+      document.getElementById('maghrib').innerHTML = " Maghrib ";
+      document.getElementById('isha').innerHTML = " Isha ";
+      if(h==6)
+      {
+        document.getElementById('fajar').style.backgroundColor = "gray";
+      }
+      else if(h>=13 && h<=16)
+      {
+        document.getElementById('zuhr').style.backgroundColor = "gray";
+      }
+      else if(h>=16 && h<=17 )
+      {
+        document.getElementById('asar').style.backgroundColor = "gray";
+      }
+      else if(h>=17 && h<19 )
+      {
+        document.getElementById('maghrib').style.backgroundColor = "gray";
+      }
+      else if(h>=19  && h<=24 )
+      {
+        document.getElementById('isha').style.backgroundColor = "gray";
+      }
+      
+    }
+  </script>
+  
+</body>
+</html>
